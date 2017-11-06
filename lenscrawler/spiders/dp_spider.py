@@ -10,7 +10,7 @@ class dpSpider(scrapy.Spider):
 
     def parseSpecPage(self, response):
         lensData = response.meta['lensData']
-        lensData['lens_brand'] = response.css('meta[itemprop="brand"]::attr(content)').extract()
+        lensData['lens_brand'] = response.css('meta[itemprop="brand"]::attr(content)').extract_first()
 
         for spec in response.css('div.quickSpecs tr'):
             currSpec = spec.css('td.label::text').extract_first()
@@ -37,10 +37,10 @@ class dpSpider(scrapy.Spider):
                 'dp_review_link': lens.css('.review a::attr(href)').extract_first(),
                 'year_released': lens.css('.announcementDate::text').re(r'[a-zA-Z]+\s+\d{2},+\s+\d{4}'),
                 'msrp': lens.css('.prices a::text').re(r'[0-9\,]+\.[0-9][0-9](?:[^0-9]|$)'),
-                'dp_lens_detail_link': lens.css('.name a::attr(href)').extract(),
+                'dp_lens_detail_link': lens.css('.name a::attr(href)').extract_first(),
             }
         
-            fullLensDetail = scrapy.Request(str(shallowLensData['dp_lens_detail_link'][0]), callback=self.parseSpecPage)
+            fullLensDetail = scrapy.Request(shallowLensData['dp_lens_detail_link'], callback=self.parseSpecPage)
             fullLensDetail.meta['lensData'] = shallowLensData
 
             yield fullLensDetail
